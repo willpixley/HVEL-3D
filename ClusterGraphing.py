@@ -61,14 +61,14 @@ def main():
         for i in range(len(points)):
             if int(points[i][0][0])>tx and int(points[i][0][1])>ty and int(points[i][0][2])>tz : #float(points[i][0][0])+float(points[i][0][2]) > tt
                 if int(crossed[i]) == 1:
-                    points[i].append('green')
+                    points[i].append('Crossed Safe Gap')
                 else:
-                    points[i].append('yellow')
+                    points[i].append('Passed Safe Gap')
             else:
                 if int(crossed[i]) == 1:
-                    points[i].append('blue')
+                    points[i].append('Crossed Unsafe Gap')
                 else:
-                    points[i].append('red')
+                    points[i].append('Passed Unsafe Gap')
     
 
     def alert_zone(x, y, z, t_x, t_y, t_z):
@@ -120,6 +120,14 @@ def main():
             big_z.extend(z)
         return big_x, big_y, big_z, colors
 
+    def readable(x,y,z,colors):
+        p_list = []
+        s_list = []
+        for i in range(len(x)):
+            p_list.append([x[i],y[i],z[i],colors[i]])
+            
+        return p_list
+
     filename = '/Users/willpixley/Downloads/Combined AR Pilot2all for graphing.csv'
     fig = plt.figure(figsize = (8, 8))
     ax = plt.axes(projection ='3d')
@@ -129,8 +137,13 @@ def main():
     d = collapse(points)
 
     
+
+    
     
     x, y, z, colors = jitter(points, d)
+    p = readable(x,y,z,colors)
+
+
     #alert_zone(x, y, z, x_thresh, y_thresh, z_thresh)
     '''
     for key in d:
@@ -152,9 +165,13 @@ def main():
         ax.plot_surface(x1, y1, z1, color='green', alpha = .6)
     '''
     
-    ax.scatter(x, y, z, c = colors, s=5)
-
-    plt.show()
+    import plotly.express as px
+    import pandas as pd
+    df = pd.DataFrame(p, index= colors, columns=['x','y','z', 'Categories'])
+    
+    fig = px.scatter_3d(df, x='x', y='y', z='z', color=colors)
+    fig.update_traces(marker=dict(size=5))
+    fig.show()
 
     
 
