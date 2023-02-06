@@ -59,7 +59,7 @@ def main():
         
         
         for i in range(len(points)):
-            if int(points[i][0][0])>tx and int(points[i][0][1])>ty and int(points[i][0][2])>tz : #float(points[i][0][0])+float(points[i][0][2]) > tt
+            if int(points[i][0][0])>tx and int(points[i][0][1])>ty and int(points[i][0][2])>tz and int(points[i][0][0])+float(points[i][0][2]) > tt:
                 if int(crossed[i]) == 1:
                     points[i].append('Crossed Safe Gap')
                 else:
