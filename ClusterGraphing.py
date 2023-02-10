@@ -128,6 +128,15 @@ def main():
             
         return p_list
 
+    def read_d(d):
+        p = []
+        for key in d:
+            if len(d[key]) > 1:
+                p.append([key, 'pink'])
+            else:
+                p.append([key, 'blue'])
+        return p
+    
     filename = '/Users/willpixley/Downloads/Combined AR Pilot2all for graphing.csv'
     fig = plt.figure(figsize = (8, 8))
     ax = plt.axes(projection ='3d')
@@ -142,6 +151,7 @@ def main():
     
     x, y, z, colors = jitter(points, d)
     p = readable(x,y,z,colors)
+    #p = read_d(d)
 
 
     #alert_zone(x, y, z, x_thresh, y_thresh, z_thresh)
@@ -168,15 +178,17 @@ def main():
     import plotly.express as px
     import pandas as pd
     df = pd.DataFrame(p, index= colors, columns=['x','y','z', 'Categories'])
-    
+    #df = px.data.iris()
+    print(df)
     fig = px.scatter_3d(df, x='x', y='y', z='z', color=colors)
+    #fig = px.scatter(df, x="sepal_width", y="sepal_length", color='petal_length')
     fig.update_traces(marker=dict(size=5))
     fig.show()
 
     
 
 main()
-
+print()
 
 
 import math
