@@ -184,11 +184,12 @@ def main():
     #fig = px.scatter(df, x="sepal_width", y="sepal_length", color='petal_length')
     fig.update_traces(marker=dict(size=5))
     fig.show()
+    print(p)
 
     
 
 main()
-print()
+
 
 
 import math
