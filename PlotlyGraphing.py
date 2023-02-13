@@ -96,8 +96,12 @@ class Data():
             z_in = columns.index(self.chosen[2])
             c_in = columns.index('gapCrossed')
             for row in n_file:
+                if int(row[c_in]) == 1:
+                    crossed = 'Crossed'
+                else:
+                    crossed = 'Not Crossed'
                 try:
-                    self.points.append([int(row[x_in]), int(row[y_in]), int(row[z_in]), row[c_in]]) 
+                    self.points.append([int(row[x_in]), int(row[y_in]), int(row[z_in]), crossed]) 
                     #self.crossed.append(int(row[c_in]))
                 ### points in form [x, y, z]
                 except:
@@ -141,9 +145,9 @@ class Data():
         return d
 
     def plot(self):
-        df = pd.DataFrame(self.points,  columns=['x','y','z', 'Categories'])
-        print(df)
-        fig = px.scatter_3d(df, x='x', y='y', z='z')
+        df = pd.DataFrame(self.points,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], 'Crossed'])
+        
+        fig = px.scatter_3d(df, x=self.chosen[0], y=self.chosen[1], z=self.chosen[2], color = 'Crossed')
         fig.update_traces(marker=dict(size=5))
         fig.show()
 
