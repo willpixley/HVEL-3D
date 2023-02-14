@@ -16,6 +16,7 @@ class Gui():
         self.titles =['yes', 'no', '5', '6']
         
         
+        
     def onClick(self, msg, window):
         self.filepath = msg
         window.close()
@@ -48,6 +49,11 @@ class Gui():
     
     def choose_axes(self):
         
+        def clicked(i):
+            chosen.append(buttons[i].objectName())
+            if len(chosen) == 3:
+                window.close()
+
         app, window, layout = self.make_window()
         label = QLabel("Select 3 categories for X, Y, and Z variables")
         layout.addWidget(label)
@@ -55,13 +61,17 @@ class Gui():
         buttons = []
         for i in range(len(self.titles)):
             buttons.append(QPushButton(self.titles[i]))
-            buttons[i].setAccessibleName(self.titles[i])
-            buttons[i].clicked.connect(lambda _, i=i: chosen.append(buttons[i].accessibleName())) ### always returning last element in list
+            
+            buttons[i].setObjectName(self.titles[i])
+            buttons[i].clicked.connect(lambda _, i=i: clicked(i)) ### always returning last element in list
+            #buttons[i].clicked.connect(lambda _, i=i: chosen.append(buttons[i].accessibleName()))
             layout.addWidget(buttons[i])
         
         window.show()
         app.exec_()
-        window.close()
+        
+        
+        
         return chosen
 
 
@@ -160,7 +170,6 @@ def main():
     gui.titles = data.getTitles(gui.filepath) ### gets and displays column titles
     data.chosen = gui.choose_axes() ## returns selected parameters
     data.make_points(gui.filepath) ### makes point list
-    print(data.points)
     data.plot()
     
 
