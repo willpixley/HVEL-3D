@@ -84,6 +84,8 @@ class Data():
         self.points = []
         self.crossed = []
         self.cat = []
+        self.d = dict()
+        
 
 
     def getTitles(self,filename):        ### get column titles
@@ -146,21 +148,27 @@ class Data():
 
 
     def collapse(self):
-        d = dict()
         for i in range(len(self.points)):
-            if self.points[i] not in d:
-                d[self.points[i]] = 0
+            if tuple(self.points[i]) not in self.d:
+                print(tuple(self.points[i]))
+                self.d[tuple(self.points[i])] = 1
             else:
-                d[self.points[i]] += 1
-        ### dictionary in form {[x, y, z]: [1, 0, 1, 0, 0]}
-        return d
+                self.d[tuple(self.points[i])] += 1
+        ### dictionary in form {(x, y, z): # of times the point appears}
+    
+    
+    
 
-    def plot(self):
-        df = pd.DataFrame(self.points,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], 'Crossed'])
-        
-        fig = px.scatter_3d(df, x=self.chosen[0], y=self.chosen[1], z=self.chosen[2], color = 'Crossed')
-        fig.update_traces(marker=dict(size=5))
-        fig.show()
+
+    def plot(self, collapsed=False):
+        if collapsed:
+            df = pd.DataFrame(self.points,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], '1+ points'])
+            
+        else:
+            df = pd.DataFrame(self.points,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], 'Crossed'])
+            fig = px.scatter_3d(df, x=self.chosen[0], y=self.chosen[1], z=self.chosen[2], color = 'Crossed')
+            fig.update_traces(marker=dict(size=5))
+            fig.show()
 
 ### /Users/willpixley/HVEL/full_file.csv
 def main():
@@ -171,6 +179,7 @@ def main():
     gui.titles = data.getTitles(gui.filepath) ### gets and displays column titles
     data.chosen = gui.choose_axes() ## returns selected parameters
     data.make_points(gui.filepath) ### makes point list
+    data.collapse()
     data.plot()
     
 
