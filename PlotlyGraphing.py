@@ -51,6 +51,7 @@ class Gui():
         
         def clicked(i):
             chosen.append(buttons[i].objectName())
+            buttons[i].setStyleSheet("background-color : blue")
             if len(chosen) == 3:
                 window.close()
 
