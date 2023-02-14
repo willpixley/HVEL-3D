@@ -51,7 +51,7 @@ class Gui():
         
         def clicked(i):
             chosen.append(buttons[i].objectName())
-            buttons[i].setStyleSheet("background-color : blue")
+            buttons[i].setStyleSheet('QPushButton {background-color: #6EA7E7; color: white;}')
             if len(chosen) == 3:
                 window.close()
 
