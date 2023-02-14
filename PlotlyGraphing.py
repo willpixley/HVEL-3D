@@ -86,6 +86,7 @@ class Data():
         self.cat = []
         self.d = dict()
         self.jittered = []
+        self.collapsedPoints = []
         
 
 
@@ -109,17 +110,19 @@ class Data():
             y_in = columns.index(self.chosen[1])
             z_in = columns.index(self.chosen[2])
             c_in = columns.index('gapCrossed')
+            
             for row in n_file:
+                ### must work for floats and to discard first line  
+                
                 if int(row[c_in]) == 1:
                     crossed = 'Crossed'
                 else:
                     crossed = 'Not Crossed'
-                try:
-                    self.points.append([int(row[x_in]), int(row[y_in]), int(row[z_in]), crossed]) 
+                
+                self.points.append([float(row[x_in]), float(row[y_in]), float(row[z_in]), crossed]) 
                     #self.crossed.append(int(row[c_in]))
                 ### points in form [x, y, z]
-                except:
-                    continue
+                
     
     def jitter_s(self):     ### returns points evenly distributed on a sphere
         d = self.collapse()
@@ -148,23 +151,37 @@ class Data():
         
 
 
-    def collapse(self):
+    def collapseDict(self):
         for i in range(len(self.points)):
-            if tuple(self.points[i]) not in self.d:
-                print(tuple(self.points[i]))
-                self.d[tuple(self.points[i])] = 1
+            if tuple(self.points[i][:3]) not in self.d:
+                if self.points[i][3] == 'Crossed': ### not registering self.
+                    self.d[tuple(self.points[i][:3])] = [1, 0]
+                else:
+                    self.d[tuple(self.points[i][:3])] = [0, 1]
             else:
-                self.d[tuple(self.points[i])] += 1
-        ### dictionary in form {(x, y, z): # of times the point appears}
+                if self.points[i][3] == 'Crossed':
+                    self.d[tuple(self.points[i][:3])][0] += 1
+                else:
+                    self.d[tuple(self.points[i][:3])][1] += 1
+            
+               
+        ### dictionary in form {(x, y, z): [# of times crossed, # of times not crossed] of times the point appears}
     
-    
-    
+    def collapsePlot(self):
+        for key in self.d:
+            self.collapsedPoints.append([key[0], key[1], key[2], round(self.d[key][0]/(self.d[key][0] + self.d[key][1]),3)])
+
 
 
     def plot(self, collapsed=False):
         if collapsed:
-            df = pd.DataFrame(self.points,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], '1+ points'])
+            df = pd.DataFrame(self.collapsedPoints,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], 'Proportion Crossed'])
             
+            fig = px.scatter_3d(df, x=self.chosen[0], y=self.chosen[1], z=self.chosen[2], color='Proportion Crossed')
+            fig.update_traces(marker=dict(size=5))
+            fig.update_traces(customdata=self.collapsedPoints, selector=dict(type='scatter'))            
+            fig.show()    
+            ### https://plotly.com/python/reference/scatter/ (hoverinfo)
         else:
             df = pd.DataFrame(self.points,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], 'Crossed'])
             fig = px.scatter_3d(df, x=self.chosen[0], y=self.chosen[1], z=self.chosen[2], color = 'Crossed')
@@ -176,17 +193,22 @@ def main():
     gui = Gui()
     data = Data()
     gui.get_path() ## gets data filepath
-    
+    #gui.filepath = '/Users/willpixley/HVEL/full_file.csv'
     gui.titles = data.getTitles(gui.filepath) ### gets and displays column titles
     data.chosen = gui.choose_axes() ## returns selected parameters
     data.make_points(gui.filepath) ### makes point list
-    data.collapse()
-    data.plot()
+    data.collapseDict()
+    data.collapsePlot()
+    data.plot(collapsed=True)
     
 
     
 
-main()
+if __name__ == '__main__':
+    try:
+        main()
+    except:
+        print("Error")
 
 
 

@@ -178,10 +178,10 @@ def main():
     import plotly.express as px
     import pandas as pd
     df = pd.DataFrame(p, index= colors, columns=['x','y','z', 'Categories'])
-    #df = px.data.iris()
+    df = px.data.iris()
     print(df)
-    fig = px.scatter_3d(df, x='x', y='y', z='z', color=colors)
-    #fig = px.scatter(df, x="sepal_width", y="sepal_length", color='petal_length')
+    #fig = px.scatter_3d(df, x='x', y='y', z='z', color=colors)
+    fig = px.scatter(df, x="sepal_width", y="sepal_length", color='petal_length')
     fig.update_traces(marker=dict(size=5))
     fig.show()
     print(p)
