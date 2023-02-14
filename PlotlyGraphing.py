@@ -85,6 +85,7 @@ class Data():
         self.crossed = []
         self.cat = []
         self.d = dict()
+        self.jittered = []
         
 
 
@@ -127,7 +128,7 @@ class Data():
         big_y = []
         big_z = []
         colors = []
-        full = []
+        
         for key in d:    
             n = d[key]
             
@@ -143,8 +144,8 @@ class Data():
                 y[j] = y[j] + int(key[1])
                 z[j] = z[j] + int(key[2])
         for i in range(len(big_x)):
-            full.append([big_x[i], big_y[i], big_z[i]])
-        return full
+            self.jittered.append([big_x[i], big_y[i], big_z[i]])
+        
 
 
     def collapse(self):
