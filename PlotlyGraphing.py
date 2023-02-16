@@ -87,6 +87,7 @@ class Data():
         self.d = dict()
         self.jittered = []
         self.collapsedPoints = []
+        self.sizes = []
         
 
 
@@ -126,11 +127,16 @@ class Data():
     
     def jitter_s(self):     ### returns points evenly distributed on a sphere
         d = self.collapse()
-        
+        self.xThresh = 0
+        self.yThresh = 0
+        self.zThresh = 0
+        self.totThresh = 0
+
         big_x = []
         big_y = []
         big_z = []
         colors = []
+        
         
         for key in d:    
             n = d[key]
@@ -163,37 +169,41 @@ class Data():
                     self.d[tuple(self.points[i][:3])][0] += 1
                 else:
                     self.d[tuple(self.points[i][:3])][1] += 1
+    
+            ### dictionary in form {(x, y, z): [# of times crossed, # of times not crossed] of times the point appears}
+
+
             
                
-        ### dictionary in form {(x, y, z): [# of times crossed, # of times not crossed] of times the point appears}
     
     def collapsePlot(self):
         for key in self.d:
-            self.collapsedPoints.append([key[0], key[1], key[2], round(self.d[key][0]/(self.d[key][0] + self.d[key][1]),3)])
+            self.collapsedPoints.append([key[0], key[1], key[2], round(self.d[key][0]/(self.d[key][0] + self.d[key][1]),3), sum(self.d[key]) ])
+            self.sizes.append( sum(self.d[key]))
 
 
 
     def plot(self, collapsed=False):
         if collapsed:
-            df = pd.DataFrame(self.collapsedPoints,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], 'Proportion Crossed'])
+            df = pd.DataFrame(self.collapsedPoints,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], 'Proportion Crossed', 'Size'])
             
-            fig = px.scatter_3d(df, x=self.chosen[0], y=self.chosen[1], z=self.chosen[2], color='Proportion Crossed')
-            fig.update_traces(marker=dict(size=5))
+            fig = px.scatter_3d(df, x=self.chosen[0], y=self.chosen[1], z=self.chosen[2], color='Proportion Crossed', size='Size')
+            #fig.update_traces(marker=dict(size=5))
             fig.update_traces(customdata=self.collapsedPoints, selector=dict(type='scatter'))            
             fig.show()    
             ### https://plotly.com/python/reference/scatter/ (hoverinfo)
         else:
             df = pd.DataFrame(self.points,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], 'Crossed'])
             fig = px.scatter_3d(df, x=self.chosen[0], y=self.chosen[1], z=self.chosen[2], color = 'Crossed')
-            fig.update_traces(marker=dict(size=5))
+            #fig.update_traces(marker=dict(self.sizes))
             fig.show()
 
 ### /Users/willpixley/HVEL/full_file.csv
 def main():
     gui = Gui()
     data = Data()
-    gui.get_path() ## gets data filepath
-    #gui.filepath = '/Users/willpixley/HVEL/full_file.csv'
+    #gui.get_path() ## gets data filepath
+    gui.filepath = '/Users/willpixley/HVEL/full_file.csv'
     gui.titles = data.getTitles(gui.filepath) ### gets and displays column titles
     data.chosen = gui.choose_axes() ## returns selected parameters
     data.make_points(gui.filepath) ### makes point list
@@ -201,14 +211,13 @@ def main():
     data.collapsePlot()
     data.plot(collapsed=True)
     
+    
 
     
 
 if __name__ == '__main__':
-    try:
-        main()
-    except:
-        print("Error")
+    main()
+   
 
 
 
