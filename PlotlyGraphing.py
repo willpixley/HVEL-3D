@@ -2,9 +2,9 @@ import plotly.express as px
 import pandas as pd
 import csv
 import numpy as np
-from PyQt5.QtWidgets import *
-from PyQt5 import uic
-from PyQt5.QtGui import QFont
+from PyQt6.QtWidgets import *
+from PyQt6 import uic
+from PyQt6.QtGui import QFont
 import sys
 from numpy import arange, pi, sin, cos, arccos
 # pip install PyQt5
@@ -13,7 +13,7 @@ from numpy import arange, pi, sin, cos, arccos
 class Gui():
     def __init__(self):
         self.filepath = ''
-        self.titles =['yes', 'no', '5', '6']
+        self.titles =[]
         
         
         
@@ -44,7 +44,7 @@ class Gui():
         button.clicked.connect(lambda: self.onClick(textbox.toPlainText(), window))
         window.setLayout(layout)
         window.show()
-        app.exec_()
+        app.exec()
         
     
     def choose_axes(self):
@@ -52,24 +52,24 @@ class Gui():
         def clicked(i):
             chosen.append(buttons[i].objectName())
             buttons[i].setStyleSheet('QPushButton {background-color: #6EA7E7; color: white;}')
-            if len(chosen) == 3:
+            if len(chosen) == 4:
                 window.close()
 
         app, window, layout = self.make_window()
-        label = QLabel("Select 3 categories for X, Y, and Z variables")
+        label = QLabel("Select 3 categories for X, Y, and Z variables. Select a 4th for the gapCrossed column")
         layout.addWidget(label)
         chosen = []
         buttons = []
+        self.titles = list(self.titles)
         for i in range(len(self.titles)):
             buttons.append(QPushButton(self.titles[i]))
-            
             buttons[i].setObjectName(self.titles[i])
             buttons[i].clicked.connect(lambda _, i=i: clicked(i)) ### always returning last element in list
             #buttons[i].clicked.connect(lambda _, i=i: chosen.append(buttons[i].accessibleName()))
             layout.addWidget(buttons[i])
         
         window.show()
-        app.exec_()
+        app.exec()
         
         
         
@@ -96,41 +96,40 @@ class Data():
 
 
     def getTitles(self,filename):        ### get column titles
-        with open(filename, 'r') as file:     # open file
-            n_file = csv.reader(file)
-            for row in n_file:
-                self.titles.append(row)
-                break
-        return self.titles[0]
-
+        self.df = pd.read_excel(filename)
+        self.df = self.df.to_dict()
+        for key in self.df:
+            key = key.strip()
+        return self.df
+        
+        
     def make_points(self, filename):
-        with open(filename, 'r') as file:     # open file
-            n_file = csv.reader(file)
-            columns = []
-            for row in n_file:
-                for i in range(len(row)):
-                    columns.append(row[i].strip())
-                break
-            x_in = columns.index(self.chosen[0])
-            y_in = columns.index(self.chosen[1])
-            z_in = columns.index(self.chosen[2])
-            c_in = columns.index('gapCrossed')
+        
+
+        t1 = self.chosen[0]
+        t2 = self.chosen[1]
+        t3 = self.chosen[2]
+        t4 = self.chosen[3]
+        xList = self.df[t1]
+        yList = self.df[t2]
+        zList = self.df[t3]
+        cList = self.df[' gapCrossed']
             
-            for row in n_file:
+        for i in range(len(xList)):
                 ### must work for floats and to discard first line  
                 
-                if int(row[c_in]) == 1:
-                    crossed = 'Crossed'
-                else:
-                    crossed = 'Not Crossed'
+            if int(cList[i]) == 1:
+                crossed = 'Crossed'
+            else:
+                crossed = 'Not Crossed'
                 
-                self.points.append([float(row[x_in]), float(row[y_in]), float(row[z_in]), crossed]) 
+            self.points.append([float(xList[i]), float(yList[i]), float(zList[i]), crossed]) 
                     #self.crossed.append(int(row[c_in]))
                 ### points in form [x, y, z]
                 
     
     def jitter_s(self):     ### returns points evenly distributed on a sphere
-        d = self.collapse()
+        d = self.collapseDict()
 
 
         big_x = []
@@ -212,7 +211,7 @@ def main():
     gui = Gui()
     data = Data()
     #gui.get_path() ## gets data filepath
-    gui.filepath = '/Users/willpixley/HVEL/full_file.csv'
+    gui.filepath = '/Users/willpixley/Downloads/CombinedParticipantsAR.xlsx'
     gui.titles = data.getTitles(gui.filepath) ### gets and displays column titles
     data.chosen = gui.choose_axes() ## returns selected parameters
     data.make_points(gui.filepath) ### makes point list
