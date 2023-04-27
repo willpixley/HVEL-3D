@@ -206,12 +206,11 @@ class Data():
             #fig.update_traces(marker=dict(self.sizes))
             fig.show()
 
-### /Users/willpixley/HVEL/full_file.csv
+
 def main():
     gui = Gui()
     data = Data()
-    #gui.get_path() ## gets data filepath
-    gui.filepath = '/Users/willpixley/Downloads/CombinedParticipantsAR.xlsx'
+    gui.get_path() ## gets data filepath
     gui.titles = data.getTitles(gui.filepath) ### gets and displays column titles
     data.chosen = gui.choose_axes() ## returns selected parameters
     data.make_points(gui.filepath) ### makes point list
