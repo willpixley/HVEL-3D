@@ -1,24 +1,20 @@
 import plotly.express as px
 import pandas as pd
-import csv
-import numpy as np
 from PyQt6.QtWidgets import *
 from PyQt6 import uic
 from PyQt6.QtGui import QFont
 import sys
 from numpy import arange, pi, sin, cos, arccos
-# pip install PyQt5
-### convert to exe 
-# https://guidingcode.com/convert-py-files-to-exe/#:~:text=Using%20cx_freeze%20to%20convert%20.,-py%20file%20to&text=py%20files%20to%20.exe%20is,and%20it%20is%20cross%2Dplatform. 
-class Gui():
+
+class Gui():    ### gui for getting and selecting data
     def __init__(self):
-        self.filepath = ''
-        self.titles =[]
+        self.filepath = '' 
+        self.titles =[] ### column titles
         
         
         
     def onClick(self, msg, window):
-        self.filepath = msg
+        self.filepath = msg ### gets filepath
         window.close()
 
     
@@ -31,7 +27,6 @@ class Gui():
 
     def get_path(self):    
         app = QApplication(sys.argv)
-        
         window = QWidget()
         layout = QVBoxLayout()
         label = QLabel("Enter filepath") 
@@ -49,13 +44,13 @@ class Gui():
     
     def choose_axes(self):
         
-        def clicked(i):
+        def clicked(i): ### choose title and gapCrossed
             chosen.append(buttons[i].objectName())
             buttons[i].setStyleSheet('QPushButton {background-color: #6EA7E7; color: white;}')
             if len(chosen) == 4:
                 window.close()
 
-        app, window, layout = self.make_window()
+        app, window, layout = self.make_window() ### makes window
         label = QLabel("Select 3 categories for X, Y, and Z variables. Select a 4th for the gapCrossed column")
         layout.addWidget(label)
         chosen = []
@@ -65,8 +60,7 @@ class Gui():
             buttons.append(QPushButton(self.titles[i]))
             buttons[i].setObjectName(self.titles[i])
             buttons[i].clicked.connect(lambda _, i=i: clicked(i)) ### always returning last element in list
-            #buttons[i].clicked.connect(lambda _, i=i: chosen.append(buttons[i].accessibleName()))
-            layout.addWidget(buttons[i])
+            layout.addWidget(buttons[i]) ### adds buttons to screen
         
         window.show()
         app.exec()
@@ -103,17 +97,17 @@ class Data():
         return self.df
         
         
-    def make_points(self, filename):
+    def make_points(self):
         
-
-        t1 = self.chosen[0]
+        ### gets lists of x, y, z, and gapCrossed
+        t1 = self.chosen[0] 
         t2 = self.chosen[1]
         t3 = self.chosen[2]
         t4 = self.chosen[3]
         xList = self.df[t1]
         yList = self.df[t2]
         zList = self.df[t3]
-        cList = self.df[' gapCrossed']
+        cList = self.df[t4]
             
         for i in range(len(xList)):
                 ### must work for floats and to discard first line  
@@ -124,11 +118,11 @@ class Data():
                 crossed = 'Not Crossed'
                 
             self.points.append([float(xList[i]), float(yList[i]), float(zList[i]), crossed]) 
-                    #self.crossed.append(int(row[c_in]))
+            
                 ### points in form [x, y, z]
                 
     
-    def jitter_s(self):     ### returns points evenly distributed on a sphere
+    def jitter_s(self):     ### returns points evenly distributed on a sphere, not used often
         d = self.collapseDict()
 
 
@@ -157,7 +151,8 @@ class Data():
         
 
 
-    def collapseDict(self):
+    def collapseDict(self):     ## returns dictionary in form {(x, y, z): [# of times crossed, # of times not crossed]}
+
         for i in range(len(self.points)):
             if tuple(self.points[i][:3]) not in self.d:
                 if self.points[i][3] == 'Crossed': ### not registering self.
@@ -170,13 +165,12 @@ class Data():
                 else:
                     self.d[tuple(self.points[i][:3])][1] += 1
     
-            ### dictionary in form {(x, y, z): [# of times crossed, # of times not crossed] of times the point appears}
 
     
             
                
     
-    def collapsePlot(self):
+    def collapsePlot(self): ###collapse points into smaller form [[x, y, z, proportion crossed, safe/unsafe]]
         for key in self.d:
             if key[0] >=self.xThresh and key[1] >= self.yThresh and key[2] >= self.zThresh and (key[0] + key[2]) >= self.totThresh:
                 status = "Safe"
@@ -190,10 +184,11 @@ class Data():
 
 
 
-    def plot(self, collapsed=False):
+    def plot(self, collapsed=False):    ### plots and formats new 3D graph using plotly
         if collapsed:
             df = pd.DataFrame(self.collapsedPoints,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], 'Proportion Crossed', 'Total Gaps', 'Gap Safety'])
-            
+            ### creates dataframe from collapsed Points
+
             fig = px.scatter_3d(df, x=self.chosen[0], y=self.chosen[1], z=self.chosen[2], color='Proportion Crossed', size='Total Gaps', symbol='Gap Safety')
             #fig.update_traces(marker=dict(size=5))
             fig.update_traces(customdata=self.collapsedPoints, selector=dict(type='scatter')) 
@@ -203,7 +198,6 @@ class Data():
         else:
             df = pd.DataFrame(self.points,  columns=[self.chosen[0],self.chosen[1],self.chosen[2], 'Crossed'])
             fig = px.scatter_3d(df, x=self.chosen[0], y=self.chosen[1], z=self.chosen[2], color = 'Crossed')
-            #fig.update_traces(marker=dict(self.sizes))
             fig.show()
 
 
@@ -213,7 +207,7 @@ def main():
     gui.get_path() ## gets data filepath
     gui.titles = data.getTitles(gui.filepath) ### gets and displays column titles
     data.chosen = gui.choose_axes() ## returns selected parameters
-    data.make_points(gui.filepath) ### makes point list
+    data.make_points() ### makes point list
     data.collapseDict()
     data.collapsePlot()
     data.plot(collapsed=True)
